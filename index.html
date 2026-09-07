@@ -32,7 +32,7 @@
       body { background: var(--color-page); color: var(--color-ink); -webkit-font-smoothing: antialiased; }
       /* Hareket: Apple'ın "response 0.38s, damping 1.0" hissine yakın, aşmayan eğri */
       :root { --ease-out-soft: cubic-bezier(.32,.72,0,1); --dur-chrome: 380ms; }
-      .chrome { transition: transform var(--dur-chrome) var(--ease-out-soft), box-shadow 240ms ease; will-change: transform; }
+      .chrome { transition: box-shadow 240ms ease; will-change: transform; transform: translate3d(0,0,0); }
       .chrome-material { background: rgba(255,255,255,.86); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); }
       .press { transition: transform 120ms var(--ease-out-soft), background-color 160ms ease; }
       .press:active { transform: scale(.96); transition-duration: 60ms; }
@@ -45,7 +45,6 @@
       @media (prefers-reduced-motion: reduce) {
         html { scroll-behavior: auto; }
         .chrome { transition: opacity 200ms ease; transform: none !important; }
-        .chrome.is-hidden { opacity: 0; pointer-events: none; }
         .press:active { transform: none; }
         .zoom-img img, .zoom-img:hover img { transform: none; transition: none; }
         .reveal { opacity: 1; transform: none; transition: none; }
@@ -64,7 +63,7 @@
     <a href="#icerik" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">İçeriğe atla</a>
 
     <!-- ===================== HEADER (mevcut site ile aynı) ===================== -->
-    <header id="sticky-header" class="chrome chrome-material sticky top-0 z-30" x-data :class="{ '-translate-y-full is-hidden': $store.chrome.hidden, 'shadow-[0_1px_0_rgba(0,0,0,.06),0_8px_24px_-16px_rgba(0,0,0,.18)]': $store.chrome.scrolled }">
+    <header id="sticky-header" class="chrome chrome-material sticky top-0 z-30" x-data :class="{ 'shadow-[0_1px_0_rgba(0,0,0,.06),0_8px_24px_-16px_rgba(0,0,0,.18)]': $store.chrome.scrolled }" data-chrome="top">
       <!-- Masaüstü (xl+) -->
       <div class="hidden xl:block">
         <div class="flex h-16 items-center gap-4 px-4">
@@ -265,7 +264,7 @@
     </main>
 
     <!-- ===================== ALT GEZİNME (mobil/tablet, mevcut site ile aynı) ===================== -->
-    <nav x-data class="chrome chrome-material fixed inset-x-0 bottom-0 z-30 border-t border-black/5 xl:hidden" style="padding-bottom:env(safe-area-inset-bottom,0px)" aria-label="Alt gezinme" :class="{ 'translate-y-full is-hidden': $store.chrome.hidden }">
+    <nav x-data class="chrome chrome-material fixed inset-x-0 bottom-0 z-30 border-t border-black/5 xl:hidden" style="padding-bottom:env(safe-area-inset-bottom,0px)" aria-label="Alt gezinme" data-chrome="bottom">
       <div class="grid h-14 grid-cols-5">
         <a href="#" class="press flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-brand-btn" aria-current="page">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-9Z"></path></svg>Ana Sayfa
@@ -337,26 +336,80 @@
 
     <script>
       document.addEventListener('alpine:init', () => {
-        // Kaydırma yönüne duyarlı üst/alt çubuk: aşağı inerken görün, yukarı çıkarken saklan.
-        // 8 px histerezis titremeyi önler; en üstte (normal akış) ve sayfa sonunda çubuk görünür.
-        Alpine.store('chrome', { hidden: false, scrolled: false });
+        // ── Akıcı üst/alt çubuk (Designing Fluid Interfaces ilkeleri) ──────────────
+        // 1) Doğrudan manipülasyon: kaydırırken çubuklar parmakla 1:1 kayar
+        //    (aşağı kaydırma → açılır, yukarı kaydırma → kapanır).
+        // 2) Bırakınca hız devralınır, momentum projeksiyonuyla hedef seçilir ve
+        //    kritik sönümlü yay (damping 1.0, response 0.38 s) hedefe oturtur.
+        // 3) Her an kesilebilir: yeni kaydırma yayı durdurur ve mevcut konumdan devam eder.
+        Alpine.store('chrome', { scrolled: false });
         (() => {
           const st = Alpine.store('chrome');
-          let last = window.scrollY, acc = 0, ticking = false;
-          const THRESH = 8, TOP = 24;
+          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const els = () => ({ top: document.querySelector('[data-chrome="top"]'), bottom: document.querySelector('[data-chrome="bottom"]') });
+          let p = 0;            // 0 = açık, 1 = kapalı (gösterim değeri)
+          let v = 0;            // p'nin hızı (1/s)
+          let target = null;    // yay hedefi; null = parmak/tekerlek kontrolde
+          let last = window.scrollY, lastT = performance.now(), idleTimer = 0, raf = 0;
+          const TOP = 24;
+          const spring = (() => { const response = 0.38, zeta = 1.0; const k = Math.pow(2 * Math.PI / response, 2); const c = 2 * zeta * Math.sqrt(k); return { k, c }; })();
+          const project = (vel, rate = 0.998) => (vel / 1000) * rate / (1 - rate); // Apple'ın momentum projeksiyonu
+
+          const paint = () => {
+            const { top, bottom } = els();
+            if (!top) return;
+            if (reduce) { top.style.opacity = String(1 - p); if (bottom) { bottom.style.opacity = String(1 - p); bottom.style.pointerEvents = p > 0.5 ? 'none' : ''; } return; }
+            top.style.transform = `translate3d(0, ${(-p * top.offsetHeight).toFixed(2)}px, 0)`;
+            if (bottom) bottom.style.transform = `translate3d(0, ${(p * bottom.offsetHeight).toFixed(2)}px, 0)`;
+          };
+
+          const step = (now) => {
+            const dt = Math.min(0.032, (now - lastT) / 1000); lastT = now;
+            if (target !== null) {
+              const a = -spring.k * (p - target) - spring.c * v;
+              v += a * dt; p += v * dt;
+              if (Math.abs(p - target) < 0.001 && Math.abs(v) < 0.01) { p = target; v = 0; target = null; }
+            }
+            p = Math.min(1, Math.max(0, p));
+            paint();
+            raf = (target !== null) ? requestAnimationFrame(step) : 0;
+          };
+          const settle = () => {
+            const y = window.scrollY;
+            const atTop = y <= TOP;
+            const atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 8;
+            const projected = p + project(v);                       // hız nereye götürüyor?
+            target = (atTop || atEnd) ? 0 : (projected < 0.5 ? 0 : 1);
+            lastT = performance.now();
+            if (!raf) raf = requestAnimationFrame(step);
+          };
+
           const onScroll = () => {
+            const now = performance.now();
             const y = Math.max(0, window.scrollY);
             const dy = y - last; last = y;
             st.scrolled = y > 4;
-            if (y <= TOP) { st.hidden = false; acc = 0; ticking = false; return; }
-            const atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 8;
-            if (atEnd) { st.hidden = false; acc = 0; ticking = false; return; }
-            acc = Math.sign(dy) === Math.sign(acc) ? acc + dy : dy;
-            if (acc > THRESH) st.hidden = false;      // aşağı kaydırma → göster
-            else if (acc < -THRESH) st.hidden = true; // yukarı kaydırma → sakla
-            ticking = false;
+            const { top } = els(); if (!top) return;
+            const h = top.offsetHeight || 1;
+            const dtMs = Math.max(8, now - lastT);
+            if (reduce) { // hareket azaltma: yalnız yön, kısa solma
+              if (y <= TOP) p = 0; else if (dy > 8) p = 0; else if (dy < -8) p = 1;
+              paint(); return;
+            }
+            // Yayı kes, kontrolü parmağa ver; hızı ölç (p birimi / s)
+            if (raf) { cancelAnimationFrame(raf); raf = 0; target = null; }
+            const dp = -dy / h;                                      // aşağı (dy>0) → p azalır → açılır
+            v = dp / (dtMs / 1000) * 0.6 + v * 0.4;                  // yumuşatılmış hız
+            p = Math.min(1, Math.max(0, p + dp));
+            if (y <= TOP) { p = 0; v = 0; }
+            lastT = now;
+            paint();
+            clearTimeout(idleTimer); idleTimer = setTimeout(settle, 90);   // bırakma anı
           };
-          window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+          window.addEventListener('scroll', onScroll, { passive: true });
+          if ('onscrollend' in window) window.addEventListener('scrollend', () => { clearTimeout(idleTimer); settle(); }, { passive: true });
+          window.addEventListener('resize', paint);
+          document.addEventListener('alpine:initialized', paint);
         })();
         const FRAMES = [
           { r: -6, x: 30, y: 20, s: 170 },
