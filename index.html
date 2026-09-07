@@ -338,7 +338,7 @@
       document.addEventListener('alpine:init', () => {
         // ── Akıcı üst/alt çubuk (Designing Fluid Interfaces ilkeleri) ──────────────
         // 1) Doğrudan manipülasyon: kaydırırken çubuklar parmakla 1:1 kayar
-        //    (aşağı kaydırma → açılır, yukarı kaydırma → kapanır).
+        //    (yukarı kaydırma → açılır, aşağı kaydırma → kapanır).
         // 2) Bırakınca hız devralınır, momentum projeksiyonuyla hedef seçilir ve
         //    kritik sönümlü yay (damping 1.0, response 0.38 s) hedefe oturtur.
         // 3) Her an kesilebilir: yeni kaydırma yayı durdurur ve mevcut konumdan devam eder.
@@ -393,12 +393,12 @@
             const h = top.offsetHeight || 1;
             const dtMs = Math.max(8, now - lastT);
             if (reduce) { // hareket azaltma: yalnız yön, kısa solma
-              if (y <= TOP) p = 0; else if (dy > 8) p = 0; else if (dy < -8) p = 1;
+              if (y <= TOP) p = 0; else if (dy > 8) p = 1; else if (dy < -8) p = 0;
               paint(); return;
             }
             // Yayı kes, kontrolü parmağa ver; hızı ölç (p birimi / s)
             if (raf) { cancelAnimationFrame(raf); raf = 0; target = null; }
-            const dp = -dy / h;                                      // aşağı (dy>0) → p azalır → açılır
+            const dp = dy / h;                                       // aşağı (dy>0) → p artar → kapanır; yukarı → açılır
             v = dp / (dtMs / 1000) * 0.6 + v * 0.4;                  // yumuşatılmış hız
             p = Math.min(1, Math.max(0, p + dp));
             if (y <= TOP) { p = 0; v = 0; }
