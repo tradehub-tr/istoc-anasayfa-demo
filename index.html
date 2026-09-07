@@ -337,8 +337,8 @@
 
     <script>
       document.addEventListener('alpine:init', () => {
-        // Kaydırma yönüne duyarlı üst/alt çubuk: aşağı inerken saklan, yukarı çıkarken görün.
-        // 8 px histerezis titremeyi önler; en üstte ve sayfa sonunda çubuk her zaman görünür.
+        // Kaydırma yönüne duyarlı üst/alt çubuk: aşağı inerken görün, yukarı çıkarken saklan.
+        // 8 px histerezis titremeyi önler; en üstte (normal akış) ve sayfa sonunda çubuk görünür.
         Alpine.store('chrome', { hidden: false, scrolled: false });
         (() => {
           const st = Alpine.store('chrome');
@@ -352,8 +352,8 @@
             const atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 8;
             if (atEnd) { st.hidden = false; acc = 0; ticking = false; return; }
             acc = Math.sign(dy) === Math.sign(acc) ? acc + dy : dy;
-            if (acc > THRESH) st.hidden = true;
-            else if (acc < -THRESH) st.hidden = false;
+            if (acc > THRESH) st.hidden = false;      // aşağı kaydırma → göster
+            else if (acc < -THRESH) st.hidden = true; // yukarı kaydırma → sakla
             ticking = false;
           };
           window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
