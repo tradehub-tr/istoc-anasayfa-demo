@@ -63,10 +63,10 @@
     <a href="#icerik" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">İçeriğe atla</a>
 
     <!-- ===================== HEADER (mevcut site ile aynı) ===================== -->
-    <header id="sticky-header" class="chrome chrome-material sticky top-0 z-30" x-data :class="{ 'shadow-[0_1px_0_rgba(0,0,0,.06),0_8px_24px_-16px_rgba(0,0,0,.18)]': $store.chrome.scrolled }" data-chrome="top">
+    <header id="sticky-header" class="pointer-events-none sticky top-0 z-30" x-data>
       <!-- Masaüstü (xl+) -->
       <div class="hidden xl:block">
-        <div class="flex h-16 items-center gap-4 px-4">
+        <div class="chrome chrome-material pointer-events-auto relative z-20 flex h-16 items-center gap-4 px-4" data-chrome="top" :class="{ 'shadow-[0_1px_0_rgba(0,0,0,.06),0_8px_24px_-16px_rgba(0,0,0,.18)]': $store.chrome.scrolled }">
           <a href="https://alpha.istoc.com/" class="shrink-0" aria-label="iStoc anasayfa">
             <img src="img/istoc-logo.png" alt="iStoc" width="87" height="32" class="h-[25px] w-auto" />
           </a>
@@ -97,7 +97,7 @@
             <a href="#" class="press flex h-10 items-center rounded-full bg-brand-btn px-5 text-sm font-semibold text-white hover:bg-[#b83700]">Kayıt ol</a>
           </div>
         </div>
-        <nav class="flex h-[45px] items-center gap-6 border-b border-gray-200 px-4 text-[14px] text-ink" aria-label="Ana gezinme">
+        <nav class="chrome chrome-material pointer-events-auto relative z-10 flex h-[45px] items-center gap-6 border-b border-gray-200 px-4 text-[14px] text-ink" aria-label="Ana gezinme" data-chrome="sub">
           <a href="#" class="flex items-center gap-2 hover:text-brand-600">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
             Tüm Kategoriler
@@ -113,7 +113,7 @@
 
       <!-- Mobil / tablet (< xl) -->
       <div class="xl:hidden">
-        <div class="flex h-12 items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-4">
+        <div class="chrome chrome-material pointer-events-auto relative z-20 flex h-12 items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-4" data-chrome="top" :class="{ 'shadow-[0_1px_0_rgba(0,0,0,.06),0_8px_24px_-16px_rgba(0,0,0,.18)]': $store.chrome.scrolled }">
           <a href="https://alpha.istoc.com/" class="shrink-0" aria-label="iStoc anasayfa">
             <img src="img/istoc-logo.png" alt="iStoc" width="87" height="32" class="h-[18px] w-auto min-[400px]:h-[22px] sm:h-[25px]" />
           </a>
@@ -123,6 +123,7 @@
           </form>
           <a href="#" class="press flex h-8 shrink-0 items-center rounded-full bg-brand-btn px-3 text-xs font-semibold text-white sm:h-10 sm:px-4 sm:text-sm">Kayıt ol</a>
         </div>
+        <div class="chrome chrome-material pointer-events-auto relative z-10" data-chrome="sub">
         <div class="border-b border-gray-200 px-3 sm:px-4">
           <div class="flex items-center justify-between">
             <span class="border-b-2 border-ink pb-2 pt-1 text-[17px] font-semibold text-ink sm:text-lg">Perakende</span>
@@ -138,6 +139,7 @@
               <span class="w-full truncate text-center text-[11px] text-text-secondary sm:text-xs" x-text="c"></span>
             </a>
           </template>
+        </div>
         </div>
       </div>
     </header>
@@ -346,7 +348,7 @@
         (() => {
           const st = Alpine.store('chrome');
           const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          const els = () => ({ top: document.querySelector('[data-chrome="top"]'), bottom: document.querySelector('[data-chrome="bottom"]') });
+          const els = () => ({ subs: [...document.querySelectorAll('[data-chrome="sub"]')].filter(e => e.offsetHeight > 0), bottom: document.querySelector('[data-chrome="bottom"]') });
           let p = 0;            // 0 = açık, 1 = kapalı (gösterim değeri)
           let v = 0;            // p'nin hızı (1/s)
           let target = null;    // yay hedefi; null = parmak/tekerlek kontrolde
@@ -356,10 +358,15 @@
           const project = (vel, rate = 0.998) => (vel / 1000) * rate / (1 - rate); // Apple'ın momentum projeksiyonu
 
           const paint = () => {
-            const { top, bottom } = els();
-            if (!top) return;
-            if (reduce) { top.style.opacity = String(1 - p); if (bottom) { bottom.style.opacity = String(1 - p); bottom.style.pointerEvents = p > 0.5 ? 'none' : ''; } return; }
-            top.style.transform = `translate3d(0, ${(-p * top.offsetHeight).toFixed(2)}px, 0)`;
+            const { subs, bottom } = els();
+            const hide = p > 0.5;
+            if (reduce) {
+              subs.forEach(el => { el.style.opacity = String(1 - p); el.style.pointerEvents = hide ? 'none' : ''; });
+              if (bottom) { bottom.style.opacity = String(1 - p); bottom.style.pointerEvents = hide ? 'none' : ''; }
+              return;
+            }
+            // Alt satır üst satırın altına kayar ve solar; üst satır (logo, arama, aksiyonlar) hep sabit
+            subs.forEach(el => { el.style.transform = `translate3d(0, ${(-p * el.offsetHeight).toFixed(2)}px, 0)`; el.style.opacity = String(1 - Math.min(1, p * 1.4)); el.style.pointerEvents = hide ? 'none' : ''; });
             if (bottom) bottom.style.transform = `translate3d(0, ${(p * bottom.offsetHeight).toFixed(2)}px, 0)`;
           };
 
@@ -389,8 +396,8 @@
             const y = Math.max(0, window.scrollY);
             const dy = y - last; last = y;
             st.scrolled = y > 4;
-            const { top } = els(); if (!top) return;
-            const h = top.offsetHeight || 1;
+            const { subs } = els(); if (!subs.length) return;
+            const h = subs[0].offsetHeight || 1;
             const dtMs = Math.max(8, now - lastT);
             if (reduce) { // hareket azaltma: yalnız yön, kısa solma
               if (y <= TOP) p = 0; else if (dy > 8) p = 1; else if (dy < -8) p = 0;
