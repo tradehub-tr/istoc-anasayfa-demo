@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="iStoc anasayfa blok düzeni önizlemesi. Gerçek alpha.istoc.com ilan verileriyle hazırlanmış statik demo." />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#ff8600" />
+    <link rel="icon" type="image/png" sizes="32x32" href="img/istoc-favicon-32.png" />
+    <title>iStoc | Anasayfa Blok Düzeni Önizlemesi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.8/dist/cdn.min.js"></script>
+    <script src="data.js"></script>
+    <style type="text/tailwindcss">
+      @font-face { font-family: "istoc-sans"; font-weight: 400; font-style: normal; font-display: swap; src: url(fonts/istoc-sans-400.woff2) format("woff2"); }
+      @font-face { font-family: "istoc-sans"; font-weight: 600; font-style: normal; font-display: swap; src: url(fonts/istoc-sans-600.woff2) format("woff2"); }
+      @font-face { font-family: "istoc-sans"; font-weight: 700; font-style: normal; font-display: swap; src: url(fonts/istoc-sans-700.woff2) format("woff2"); }
+      @theme {
+        --font-sans: "istoc-sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        --color-brand-500: #ff8600;
+        --color-brand-600: #db7300;
+        --color-brand-btn: #d64000;
+        --color-link: #cc6b00;
+        --color-link-hover: #b35e00;
+        --color-page: #e3e6e6;
+        --color-ink: #0f1111;
+        --color-text-secondary: #525252;
+        --color-text-tertiary: #737373;
+        --color-border: #e5e5e5;
+      }
+      html { scroll-behavior: smooth; }
+      body { background: var(--color-page); color: var(--color-ink); -webkit-font-smoothing: antialiased; }
+      [x-cloak] { display: none !important; }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { scrollbar-width: none; }
+      .card-link { @apply mt-auto pt-3.5 text-[13px] leading-[19px] text-link hover:text-link-hover hover:underline; }
+      .card-title { @apply mb-3 text-[21px] font-bold leading-[27px] text-ink; }
+      .cell-label { @apply truncate text-xs leading-4 text-ink; }
+    </style>
+  </head>
+  <body class="font-sans">
+    <a href="#icerik" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">İçeriğe atla</a>
+
+    <!-- ===================== HEADER (mevcut site ile aynı) ===================== -->
+    <header id="sticky-header" class="sticky top-0 z-30 bg-white">
+      <!-- Masaüstü (xl+) -->
+      <div class="hidden xl:block">
+        <div class="flex h-16 items-center gap-4 px-4">
+          <a href="https://alpha.istoc.com/" class="shrink-0" aria-label="iStoc anasayfa">
+            <img src="img/istoc-logo.png" alt="iStoc" width="87" height="32" class="h-[25px] w-auto" />
+          </a>
+          <form class="flex h-11 min-w-0 flex-1 max-w-[560px] items-center rounded-full border border-gray-300 pl-5 pr-1.5" role="search" onsubmit="return false">
+            <input type="search" placeholder="Otomotiv Parçaları" class="h-full w-full bg-transparent text-[15px] text-ink placeholder:text-gray-400 focus:outline-none" aria-label="Ürün ara" />
+            <button type="submit" class="h-8 shrink-0 rounded-full bg-brand-btn px-5 text-sm font-semibold text-white hover:bg-[#b83700]">Ara</button>
+          </form>
+          <div class="ml-2 flex shrink-0 items-center gap-1.5 text-[14px] whitespace-nowrap text-text-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+            <span>Teslimat:</span><span class="text-base leading-none">🇹🇷</span><span class="text-ink">TR</span>
+          </div>
+          <div class="flex shrink-0 items-center gap-1.5 text-[14px] whitespace-nowrap text-ink">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-gray-400"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"></path></svg>
+            <span>Türkçe-TRY</span>
+          </div>
+          <div class="ml-auto flex shrink-0 items-center gap-2 whitespace-nowrap">
+            <span class="mx-1 h-6 w-px bg-gray-200"></span>
+            <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-gray-100" aria-label="Teklif isteklerim">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"></path><path d="M14 3v5h5M9 13h6M9 17h6"></path></svg>
+            </a>
+            <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-gray-100" aria-label="Sepet">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle><path d="M2 3h3l2.7 11.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L22 7H6"></path></svg>
+            </a>
+            <a href="#" class="ml-2 flex h-10 items-center gap-2 rounded-full border border-gray-300 px-4 text-sm font-semibold text-ink hover:bg-gray-50">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+              Giriş yap
+            </a>
+            <a href="#" class="flex h-10 items-center rounded-full bg-brand-btn px-5 text-sm font-semibold text-white hover:bg-[#b83700]">Kayıt ol</a>
+          </div>
+        </div>
+        <nav class="flex h-[45px] items-center gap-6 border-b border-gray-200 px-4 text-[14px] text-ink" aria-label="Ana gezinme">
+          <a href="#" class="flex items-center gap-2 hover:text-brand-600">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            Tüm Kategoriler
+          </a>
+          <a href="#" class="hover:text-brand-600">Öne Çıkan Seçimler</a>
+          <a href="#" class="hover:text-brand-600">Sipariş Korumaları</a>
+          <div class="ml-auto flex items-center gap-6">
+            <a href="#" class="hover:text-brand-600">Yardım Merkezi</a>
+            <a href="#" class="hover:text-brand-600">iStoc'ta Sat</a>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Mobil / tablet (< xl) -->
+      <div class="xl:hidden">
+        <div class="flex h-12 items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-4">
+          <a href="https://alpha.istoc.com/" class="shrink-0" aria-label="iStoc anasayfa">
+            <img src="img/istoc-logo.png" alt="iStoc" width="87" height="32" class="h-[18px] w-auto min-[400px]:h-[22px] sm:h-[25px]" />
+          </a>
+          <form class="flex h-9 min-w-0 flex-1 items-center rounded-full border border-gray-300 pl-4 pr-1 sm:h-11" role="search" onsubmit="return false">
+            <input type="search" placeholder="Ne arıyorsunuz?" class="h-full w-full min-w-0 bg-transparent text-center text-[13px] text-ink placeholder:text-gray-400 focus:outline-none sm:text-[15px]" aria-label="Ürün ara" />
+            <button type="submit" class="h-7 shrink-0 rounded-full bg-brand-btn px-3 text-xs font-semibold text-white sm:h-8 sm:px-4 sm:text-sm">Ara</button>
+          </form>
+          <a href="#" class="flex h-8 shrink-0 items-center rounded-full bg-brand-btn px-3 text-xs font-semibold text-white sm:h-10 sm:px-4 sm:text-sm">Kayıt ol</a>
+        </div>
+        <div class="border-b border-gray-200 px-3 sm:px-4">
+          <div class="flex items-center justify-between">
+            <span class="border-b-2 border-ink pb-2 pt-1 text-[17px] font-semibold text-ink sm:text-lg">Perakende</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+        </div>
+        <div x-data class="no-scrollbar flex gap-3 overflow-x-auto border-b border-gray-200 px-3 py-3 sm:gap-4 sm:px-4">
+          <template x-for="c in ['Ofis','Moda','Oto Aksesuar','Spor & Outdoor','Bahçe','Ev & Yaşam','Ofis & Kırtasiye']" :key="c">
+            <a href="#" class="flex w-[60px] shrink-0 flex-col items-center gap-1.5 sm:w-20">
+              <span class="flex h-[60px] w-[60px] items-center justify-center rounded-lg bg-gray-100 sm:h-20 sm:w-20">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9c9c9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 16l5-5 4 4 3-3 6 6"></path><circle cx="16" cy="9" r="1.5"></circle></svg>
+              </span>
+              <span class="w-full truncate text-center text-[11px] text-text-secondary sm:text-xs" x-text="c"></span>
+            </a>
+          </template>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===================== ANA İÇERİK ===================== -->
+    <main id="icerik" x-data="home()" class="mx-auto w-full pb-5 xl:w-[78%] xl:max-w-[1500px]">
+      <h1 class="sr-only">iStoc: Global B2B Toptan Satış ve Ticaret Pazaryeri</h1>
+
+      <!-- HERO -->
+      <section class="relative -mb-[80px] h-[300px] overflow-hidden sm:h-[340px] xl:-mb-[110px] xl:h-[400px]" aria-label="Öne çıkan kampanyalar">
+        <template x-for="(s, i) in slides" :key="i">
+          <div class="absolute inset-0 transition-opacity duration-700" :class="i === slide ? 'opacity-100' : 'pointer-events-none opacity-0'" :style="'background:' + s.bg" :aria-hidden="i !== slide">
+            <!-- kolaj: gerçek ürün fotoğrafları beyaz çerçevede (md+) -->
+            <div class="absolute top-0 right-2 hidden h-full w-[300px] origin-top-right scale-[.55] md:block lg:right-3 lg:w-[420px] lg:scale-[.78] xl:right-3.5 xl:scale-[.78]" style="width:540px" aria-hidden="true">
+              <template x-for="(f, k) in collage(s)" :key="k">
+                <div class="absolute flex items-center justify-center rounded-[14px] bg-white p-2 shadow-[0_12px_30px_rgba(0,0,0,.28)]" :style="f.style"><img :src="f.src" alt="" class="max-h-full max-w-full object-contain" loading="lazy" /></div>
+              </template>
+            </div>
+            <div class="absolute inset-y-0 left-0 flex max-w-[92%] flex-col gap-1.5 p-5 text-white sm:max-w-[60%] sm:p-8 xl:max-w-[54%] xl:p-11">
+              <div class="text-[15px] font-bold leading-6 opacity-95 sm:text-xl sm:leading-[26px]" x-text="s.label.charAt(0) + s.label.slice(1).toLocaleLowerCase('tr')"></div>
+              <h2 class="text-[28px] font-bold leading-[1.08] text-balance sm:text-[32px] xl:text-[38px]" x-text="s.title"></h2>
+              <p class="mt-2 hidden text-[15px] leading-[22px] text-white/85 sm:block" x-text="s.desc"></p>
+              <a :href="s.href" class="mt-3 inline-flex h-10 w-fit items-center rounded-full bg-ink px-5 text-sm font-semibold text-white hover:bg-black" x-text="s.btn"></a>
+            </div>
+          </div>
+        </template>
+        <button type="button" @click="prev()" class="absolute inset-y-0 left-0 z-10 flex w-12 items-center justify-center text-white/90 hover:text-white xl:w-[60px]" aria-label="Önceki slayt">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l-8 8 8 8"></path></svg>
+        </button>
+        <button type="button" @click="next()" class="absolute inset-y-0 right-0 z-10 flex w-12 items-center justify-center text-white/90 hover:text-white xl:w-[60px]" aria-label="Sonraki slayt">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4l8 8-8 8"></path></svg>
+        </button>
+        <div class="pointer-events-none absolute inset-x-0 bottom-0 h-[150px] xl:h-[180px]" style="background:linear-gradient(to bottom, rgba(227,230,230,0) 0%, #e3e6e6 100%)"></div>
+        <div class="absolute inset-x-0 bottom-[86px] z-10 flex justify-center gap-1.5 xl:bottom-[118px]">
+          <template x-for="(s, i) in slides" :key="'d' + i">
+            <button type="button" @click="go(i)" class="h-1.5 rounded-full transition-all" :class="i === slide ? 'w-5 bg-white' : 'w-1.5 bg-white/50'" :aria-label="'Slayt ' + (i + 1)"></button>
+          </template>
+        </div>
+      </section>
+
+      <div class="relative z-10 flex flex-col gap-[15px] px-3 sm:px-4 xl:px-[15px]">
+        <!-- Bilgi şeridi -->
+        <div class="bg-[#f5f6f6] px-4 py-2.5 text-center text-[13px] leading-[19px] text-ink shadow-[0_1px_3px_rgba(0,0,0,.12)]">
+          alpha.istoc.com üzerindesiniz. Ticaret Güvencesi ile güvenli ödeme ve teslimat garantisi.
+          <a href="https://alpha.istoc.com/pages/trade-assurance.html" class="text-link hover:text-link-hover hover:underline">Nasıl çalıştığını görün</a>
+        </div>
+
+        <!-- Bölümler -->
+        <template x-for="(sec, si) in sections" :key="si">
+          <div>
+            <!-- 4'lü kart satırı -->
+            <template x-if="sec.type === 'cards'">
+              <div class="grid grid-cols-1 gap-[15px] md:grid-cols-2 xl:grid-cols-4">
+                <template x-for="(c, ci) in sec.items" :key="ci">
+                  <section class="flex min-w-0 flex-col bg-white p-5">
+                    <h2 class="card-title" x-text="c.title"></h2>
+
+                    <template x-if="c.type === 'big'">
+                      <a :href="c.item.href" class="block h-[260px] overflow-hidden bg-white md:h-[300px] xl:h-[190px]">
+                        <img :src="c.item.src" :alt="c.item.label" class="h-full w-full object-contain" loading="lazy" />
+                      </a>
+                    </template>
+
+                    <template x-if="c.type === 'quad' || c.type === 'duo'">
+                      <div class="grid grid-cols-2 gap-3">
+                        <template x-for="(it, ii) in c.items" :key="ii">
+                          <a :href="it.href" class="flex min-w-0 flex-col gap-1.5">
+                            <span class="block overflow-hidden bg-white" :class="c.type === 'duo' ? 'h-[150px] md:h-[160px] xl:h-[120px]' : 'h-[150px] md:h-[130px] xl:h-[80px]'">
+                              <img :src="it.src" :alt="it.label" class="h-full w-full" :class="it.fit === 'cover' ? 'object-cover' : 'object-contain'" loading="lazy" />
+                            </span>
+                            <span class="cell-label" x-text="it.label"></span>
+                          </a>
+                        </template>
+                      </div>
+                    </template>
+
+                    <template x-if="c.type === 'mixed'">
+                      <div class="flex flex-col gap-3">
+                        <a :href="c.big.href" class="flex flex-col gap-1.5">
+                          <span class="block h-[180px] overflow-hidden md:h-[160px] xl:h-[96px]"><img :src="c.big.src" :alt="c.big.label" class="h-full w-full object-cover" loading="lazy" /></span>
+                          <span class="text-[15px] leading-5 text-ink" x-text="c.big.label"></span>
+                        </a>
+                        <div class="grid grid-cols-3 gap-2.5">
+                          <template x-for="(it, ii) in c.items" :key="ii">
+                            <a :href="it.href" class="flex min-w-0 flex-col gap-1.5">
+                              <span class="block h-[92px] overflow-hidden bg-white md:h-[84px] xl:h-[58px]"><img :src="it.src" :alt="it.label" class="h-full w-full object-contain" loading="lazy" /></span>
+                              <span class="truncate text-[15px] leading-5 text-ink" x-text="it.label"></span>
+                            </a>
+                          </template>
+                        </div>
+                      </div>
+                    </template>
+
+                    <a href="#" class="card-link" x-text="c.link"></a>
+                  </section>
+                </template>
+              </div>
+            </template>
+
+            <!-- Görsel kaydırıcı -->
+            <template x-if="sec.type === 'carousel'">
+              <section class="relative flex flex-col gap-3.5 overflow-hidden bg-white py-5 pl-5" x-data="carousel()">
+                <h2 class="text-[21px] font-bold leading-[27px] text-ink" x-text="sec.title"></h2>
+                <div class="relative">
+                  <div x-ref="track" class="no-scrollbar flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-smooth pr-5 xl:gap-3">
+                    <template x-for="(it, ii) in sec.items" :key="ii">
+                      <a :href="it.href" :title="it.label + ' · ' + it.price + ' · Min. sipariş: ' + it.moq" class="flex h-[150px] w-[150px] shrink-0 snap-start items-center justify-center bg-white xl:h-[146px] xl:w-[146px]">
+                        <img :src="it.src" :alt="it.label" class="max-h-full max-w-full object-contain" loading="lazy" />
+                      </a>
+                    </template>
+                  </div>
+                  <button type="button" @click="scrollBy(-1)" class="absolute top-1/2 left-0 z-10 flex h-[100px] w-[46px] -translate-y-1/2 items-center justify-center rounded-r bg-white shadow-[0_2px_8px_rgba(0,0,0,.25)] hover:bg-gray-50" aria-label="Geri kaydır">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+                  </button>
+                  <button type="button" @click="scrollBy(1)" class="absolute top-1/2 right-0 z-10 flex h-[100px] w-[46px] -translate-y-1/2 items-center justify-center rounded-l bg-white shadow-[0_2px_8px_rgba(0,0,0,.25)] hover:bg-gray-50" aria-label="İleri kaydır">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
+                  </button>
+                </div>
+              </section>
+            </template>
+          </div>
+        </template>
+      </div>
+    </main>
+
+    <!-- ===================== FOOTER (mevcut site ile aynı) ===================== -->
+    <footer class="mt-2 bg-[#f5f5f5]" x-data="{ cols: [
+        { h: 'DESTEK ALIN', l: ['Yardım Merkezi','Canlı Destek','Sipariş durumunu kontrol edin','Kargo ve Teslimat','İadeler','Kötüye kullanım bildirin'] },
+        { h: 'ÖDEMELER VE KORUMALAR', l: ['Güvenli ve kolay ödemeler','Ödeme Seçenekleri','Para iade politikası','Satış sonrası korumalar','Alıcı Koruma Programı'] },
+        { h: 'İSTOC’TA TEDARİK', l: ['Fiyat Teklifi Talebi','Doğrulanmış Tedarikçiler','Tüm Kategoriler','Haftanın Fırsatları','Yeni Ürünler'] },
+        { h: 'İSTOC’TA SATIŞ', l: ['Satışa başla','Satıcı Merkezi','Fiyat Tablosu'] },
+        { h: 'KURUMSAL', l: ['Çerez Tercihleri','Gizlilik Politikası','Kullanım Koşulları'] }
+      ] }">
+      <div class="grid grid-cols-2 gap-x-6 gap-y-8 px-4 pt-10 pb-8 md:grid-cols-3 xl:grid-cols-6 xl:pb-10">
+        <template x-for="c in cols" :key="c.h">
+          <div>
+            <h3 class="mb-4 text-[13px] font-bold tracking-wide text-ink" x-text="c.h"></h3>
+            <ul class="flex flex-col gap-2.5">
+              <template x-for="l in c.l" :key="l"><li><a href="#" class="text-[13px] leading-[18px] text-text-secondary hover:text-ink hover:underline" x-text="l"></a></li></template>
+            </ul>
+          </div>
+        </template>
+        <div class="col-span-2 md:col-span-3 xl:col-span-1">
+          <h3 class="mb-4 text-center text-[13px] font-bold tracking-wide text-ink xl:text-left">DİL VE PARA BİRİMİ</h3>
+          <button type="button" class="mx-auto flex h-11 w-full max-w-[340px] items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 text-sm font-semibold text-ink xl:mx-0 xl:max-w-none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-gray-500"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"></path></svg>
+            <span>Türkçe · USD</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="ml-auto text-gray-500"><path d="M6 15l6-6 6 6"></path></svg>
+          </button>
+        </div>
+      </div>
+      <div class="bg-[#0a0a0a] px-4 py-6 text-white">
+        <div class="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
+          <div class="flex items-center gap-3">
+            <a href="#" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/40 text-white hover:border-white" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"></circle></svg></a>
+            <a href="#" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/40 text-white hover:border-white" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8Z"></path></svg></a>
+            <a href="#" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/40 text-white hover:border-white" aria-label="X"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M20 4L4 20"></path></svg></a>
+            <a href="#" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/40 text-white hover:border-white" aria-label="LinkedIn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="4" height="12"></rect><circle cx="5" cy="5" r="2"></circle><path d="M11 9h4v2a4 4 0 0 1 6 3v7h-4v-6a2 2 0 0 0-4 0v6h-4V9Z"></path></svg></a>
+            <a href="#" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/40 text-white hover:border-white" aria-label="YouTube"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M10 9.5v5l4.5-2.5-4.5-2.5Z" fill="currentColor"></path></svg></a>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <a href="#" class="flex h-10 items-center gap-2 rounded-md border border-white/30 bg-black px-3 text-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.5 2-3.7 2.1-3.8-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.8-1.7 0-3.2 1-4.1 2.5-1.8 3-.5 7.6 1.3 10.1.8 1.2 1.8 2.6 3.1 2.5 1.3-.1 1.7-.8 3.3-.8 1.5 0 2 .8 3.3.8 1.4 0 2.2-1.2 3-2.5.9-1.4 1.3-2.7 1.3-2.8 0 0-2.6-1-2.6-4.1ZM14 5.3c.7-.8 1.1-2 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4Z"></path></svg>
+              <span class="flex flex-col leading-none"><span class="text-[9px] opacity-80">İndirebilirsin</span><span class="text-[13px] font-semibold">App Store</span></span>
+            </a>
+            <a href="#" class="flex h-10 items-center gap-2 rounded-md border border-white/30 bg-black px-3 text-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 3.5v17l9.5-8.5L4 3.5Zm11 7.2 2.8-1.6-11-6.4 8.2 8Zm0 2.6-8.2 8 11-6.4-2.8-1.6Zm1.7-1.3 3.3 1.9c.8.5.8 1.3 0 1.8l-3.3 1.9-3-2.8 3-2.8Z"></path></svg>
+              <span class="flex flex-col leading-none"><span class="text-[9px] opacity-80">İndirebilirsin</span><span class="text-[13px] font-semibold">Google Play</span></span>
+            </a>
+          </div>
+        </div>
+        <p class="mt-6 text-center text-xs text-white/70">© 2026 iStoc Private Company Limited. Tüm hakları saklıdır.</p>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener('alpine:init', () => {
+        const FRAMES = [
+          { r: -6, x: 30, y: 20, s: 170 },
+          { r: 5, x: 220, y: 10, s: 150 },
+          { r: -3, x: 380, y: 50, s: 140 },
+          { r: 7, x: 130, y: 180, s: 130 },
+          { r: -5, x: 320, y: 195, s: 130 },
+        ];
+        Alpine.data('home', () => ({
+          slides: window.ISTOC_HOME.slides,
+          sections: window.ISTOC_HOME.sections,
+          slide: 0,
+          timer: null,
+          init() { this.play(); },
+          play() {
+            clearInterval(this.timer);
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            this.timer = setInterval(() => this.next(), 6000);
+          },
+          go(i) { this.slide = (i + this.slides.length) % this.slides.length; this.play(); },
+          next() { this.slide = (this.slide + 1) % this.slides.length; },
+          prev() { this.go(this.slide - 1); },
+          collage(s) {
+            return FRAMES.map((f, k) => ({
+              src: s.collage[k],
+              style: `left:${f.x}px;top:${f.y}px;width:${f.s}px;height:${f.s}px;transform:rotate(${f.r}deg)`,
+            }));
+          },
+        }));
+        Alpine.data('carousel', () => ({
+          scrollBy(dir) {
+            const el = this.$refs.track;
+            el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+          },
+        }));
+      });
+    </script>
+  </body>
+</html>
