@@ -30,6 +30,28 @@
       }
       html { scroll-behavior: smooth; }
       body { background: var(--color-page); color: var(--color-ink); -webkit-font-smoothing: antialiased; }
+      /* Hareket: Apple'ın "response 0.38s, damping 1.0" hissine yakın, aşmayan eğri */
+      :root { --ease-out-soft: cubic-bezier(.32,.72,0,1); --dur-chrome: 380ms; }
+      .chrome { transition: transform var(--dur-chrome) var(--ease-out-soft), box-shadow 240ms ease; will-change: transform; }
+      .chrome-material { background: rgba(255,255,255,.86); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); }
+      .press { transition: transform 120ms var(--ease-out-soft), background-color 160ms ease; }
+      .press:active { transform: scale(.96); transition-duration: 60ms; }
+      .zoom-img img { transition: transform 480ms var(--ease-out-soft); transform-origin: center; }
+      .zoom-img:hover img { transform: scale(1.035); }
+      .reveal { opacity: 0; transform: translateY(14px); transition: opacity 560ms var(--ease-out-soft), transform 620ms var(--ease-out-soft); }
+      .reveal.is-in { opacity: 1; transform: none; }
+      .slide-enter { transform: scale(1.02); transition: opacity 700ms var(--ease-out-soft), transform 900ms var(--ease-out-soft); }
+      .slide-enter.is-active { transform: none; }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .chrome { transition: opacity 200ms ease; transform: none !important; }
+        .chrome.is-hidden { opacity: 0; pointer-events: none; }
+        .press:active { transform: none; }
+        .zoom-img img, .zoom-img:hover img { transform: none; transition: none; }
+        .reveal { opacity: 1; transform: none; transition: none; }
+        .slide-enter { transform: none; transition: opacity 200ms ease; }
+      }
+      @media (prefers-reduced-transparency: reduce) { .chrome-material { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; } }
       [x-cloak] { display: none !important; }
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { scrollbar-width: none; }
@@ -42,7 +64,7 @@
     <a href="#icerik" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">İçeriğe atla</a>
 
     <!-- ===================== HEADER (mevcut site ile aynı) ===================== -->
-    <header id="sticky-header" class="sticky top-0 z-30 bg-white">
+    <header id="sticky-header" class="chrome chrome-material sticky top-0 z-30" x-data :class="{ '-translate-y-full is-hidden': $store.chrome.hidden, 'shadow-[0_1px_0_rgba(0,0,0,.06),0_8px_24px_-16px_rgba(0,0,0,.18)]': $store.chrome.scrolled }">
       <!-- Masaüstü (xl+) -->
       <div class="hidden xl:block">
         <div class="flex h-16 items-center gap-4 px-4">
@@ -51,7 +73,7 @@
           </a>
           <form class="flex h-11 min-w-0 flex-1 max-w-[560px] items-center rounded-full border border-gray-300 pl-5 pr-1.5" role="search" onsubmit="return false">
             <input type="search" placeholder="Otomotiv Parçaları" class="h-full w-full bg-transparent text-[15px] text-ink placeholder:text-gray-400 focus:outline-none" aria-label="Ürün ara" />
-            <button type="submit" class="h-8 shrink-0 rounded-full bg-brand-btn px-5 text-sm font-semibold text-white hover:bg-[#b83700]">Ara</button>
+            <button type="submit" class="press h-8 shrink-0 rounded-full bg-brand-btn px-5 text-sm font-semibold text-white hover:bg-[#b83700]">Ara</button>
           </form>
           <div class="ml-2 flex shrink-0 items-center gap-1.5 text-[14px] whitespace-nowrap text-text-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
@@ -69,11 +91,11 @@
             <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-gray-100" aria-label="Sepet">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle><path d="M2 3h3l2.7 11.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L22 7H6"></path></svg>
             </a>
-            <a href="#" class="ml-2 flex h-10 items-center gap-2 rounded-full border border-gray-300 px-4 text-sm font-semibold text-ink hover:bg-gray-50">
+            <a href="#" class="press ml-2 flex h-10 items-center gap-2 rounded-full border border-gray-300 px-4 text-sm font-semibold text-ink hover:bg-gray-50">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
               Giriş yap
             </a>
-            <a href="#" class="flex h-10 items-center rounded-full bg-brand-btn px-5 text-sm font-semibold text-white hover:bg-[#b83700]">Kayıt ol</a>
+            <a href="#" class="press flex h-10 items-center rounded-full bg-brand-btn px-5 text-sm font-semibold text-white hover:bg-[#b83700]">Kayıt ol</a>
           </div>
         </div>
         <nav class="flex h-[45px] items-center gap-6 border-b border-gray-200 px-4 text-[14px] text-ink" aria-label="Ana gezinme">
@@ -98,9 +120,9 @@
           </a>
           <form class="flex h-9 min-w-0 flex-1 items-center rounded-full border border-gray-300 pl-4 pr-1 sm:h-11" role="search" onsubmit="return false">
             <input type="search" placeholder="Ne arıyorsunuz?" class="h-full w-full min-w-0 bg-transparent text-center text-[13px] text-ink placeholder:text-gray-400 focus:outline-none sm:text-[15px]" aria-label="Ürün ara" />
-            <button type="submit" class="h-7 shrink-0 rounded-full bg-brand-btn px-3 text-xs font-semibold text-white sm:h-8 sm:px-4 sm:text-sm">Ara</button>
+            <button type="submit" class="press h-7 shrink-0 rounded-full bg-brand-btn px-3 text-xs font-semibold text-white sm:h-8 sm:px-4 sm:text-sm">Ara</button>
           </form>
-          <a href="#" class="flex h-8 shrink-0 items-center rounded-full bg-brand-btn px-3 text-xs font-semibold text-white sm:h-10 sm:px-4 sm:text-sm">Kayıt ol</a>
+          <a href="#" class="press flex h-8 shrink-0 items-center rounded-full bg-brand-btn px-3 text-xs font-semibold text-white sm:h-10 sm:px-4 sm:text-sm">Kayıt ol</a>
         </div>
         <div class="border-b border-gray-200 px-3 sm:px-4">
           <div class="flex items-center justify-between">
@@ -110,7 +132,7 @@
         </div>
         <div x-data class="no-scrollbar flex gap-3 overflow-x-auto border-b border-gray-200 px-3 py-3 sm:gap-4 sm:px-4">
           <template x-for="c in ['Ofis','Moda','Oto Aksesuar','Spor & Outdoor','Bahçe','Ev & Yaşam','Ofis & Kırtasiye']" :key="c">
-            <a href="#" class="flex w-[60px] shrink-0 flex-col items-center gap-1.5 sm:w-20">
+            <a href="#" class="press flex w-[60px] shrink-0 flex-col items-center gap-1.5 sm:w-20">
               <span class="flex h-[60px] w-[60px] items-center justify-center rounded-lg bg-gray-100 sm:h-20 sm:w-20">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9c9c9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 16l5-5 4 4 3-3 6 6"></path><circle cx="16" cy="9" r="1.5"></circle></svg>
               </span>
@@ -128,7 +150,7 @@
       <!-- HERO -->
       <section class="relative -mb-[80px] h-[300px] overflow-hidden sm:h-[340px] xl:-mb-[110px] xl:h-[400px]" aria-label="Öne çıkan kampanyalar">
         <template x-for="(s, i) in slides" :key="i">
-          <div class="absolute inset-0 transition-opacity duration-700" :class="i === slide ? 'opacity-100' : 'pointer-events-none opacity-0'" :style="'background:' + s.bg" :aria-hidden="i !== slide">
+          <div class="slide-enter absolute inset-0" :class="i === slide ? 'is-active opacity-100' : 'pointer-events-none opacity-0'" :style="'background:' + s.bg" :aria-hidden="i !== slide">
             <!-- kolaj: gerçek ürün fotoğrafları beyaz çerçevede (md+) -->
             <div class="absolute top-0 right-2 hidden h-full w-[300px] origin-top-right scale-[.55] md:block lg:right-3 lg:w-[420px] lg:scale-[.78] xl:right-3.5 xl:scale-[.78]" style="width:540px" aria-hidden="true">
               <template x-for="(f, k) in collage(s)" :key="k">
@@ -139,14 +161,14 @@
               <div class="text-[15px] font-bold leading-6 opacity-95 sm:text-xl sm:leading-[26px]" x-text="s.label.charAt(0) + s.label.slice(1).toLocaleLowerCase('tr')"></div>
               <h2 class="text-[28px] font-bold leading-[1.08] text-balance sm:text-[32px] xl:text-[38px]" x-text="s.title"></h2>
               <p class="mt-2 hidden text-[15px] leading-[22px] text-white/85 sm:block" x-text="s.desc"></p>
-              <a :href="s.href" class="mt-3 inline-flex h-10 w-fit items-center rounded-full bg-ink px-5 text-sm font-semibold text-white hover:bg-black" x-text="s.btn"></a>
+              <a :href="s.href" class="press mt-3 inline-flex h-10 w-fit items-center rounded-full bg-ink px-5 text-sm font-semibold text-white hover:bg-black" x-text="s.btn"></a>
             </div>
           </div>
         </template>
-        <button type="button" @click="prev()" class="absolute inset-y-0 left-0 z-10 flex w-12 items-center justify-center text-white/90 hover:text-white xl:w-[60px]" aria-label="Önceki slayt">
+        <button type="button" @click="prev()" class="press absolute inset-y-0 left-0 z-10 flex w-12 items-center justify-center text-white/90 hover:text-white xl:w-[60px]" aria-label="Önceki slayt">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l-8 8 8 8"></path></svg>
         </button>
-        <button type="button" @click="next()" class="absolute inset-y-0 right-0 z-10 flex w-12 items-center justify-center text-white/90 hover:text-white xl:w-[60px]" aria-label="Sonraki slayt">
+        <button type="button" @click="next()" class="press absolute inset-y-0 right-0 z-10 flex w-12 items-center justify-center text-white/90 hover:text-white xl:w-[60px]" aria-label="Sonraki slayt">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4l8 8-8 8"></path></svg>
         </button>
         <div class="pointer-events-none absolute inset-x-0 bottom-0 h-[150px] xl:h-[180px]" style="background:linear-gradient(to bottom, rgba(227,230,230,0) 0%, #e3e6e6 100%)"></div>
@@ -166,7 +188,7 @@
 
         <!-- Bölümler -->
         <template x-for="(sec, si) in sections" :key="si">
-          <div>
+          <div class="reveal" x-reveal>
             <!-- 4'lü kart satırı -->
             <template x-if="sec.type === 'cards'">
               <div class="grid grid-cols-1 gap-[15px] md:grid-cols-2 xl:grid-cols-4">
@@ -175,7 +197,7 @@
                     <h2 class="card-title" x-text="c.title"></h2>
 
                     <template x-if="c.type === 'big'">
-                      <a :href="c.item.href" class="block h-[260px] overflow-hidden bg-white md:h-[300px] xl:h-[190px]">
+                      <a :href="c.item.href" class="zoom-img block h-[260px] overflow-hidden bg-white md:h-[300px] xl:h-[190px]">
                         <img :src="c.item.src" :alt="c.item.label" class="h-full w-full object-contain" loading="lazy" />
                       </a>
                     </template>
@@ -183,7 +205,7 @@
                     <template x-if="c.type === 'quad' || c.type === 'duo'">
                       <div class="grid grid-cols-2 gap-3">
                         <template x-for="(it, ii) in c.items" :key="ii">
-                          <a :href="it.href" class="flex min-w-0 flex-col gap-1.5">
+                          <a :href="it.href" class="zoom-img flex min-w-0 flex-col gap-1.5">
                             <span class="block overflow-hidden bg-white" :class="c.type === 'duo' ? 'h-[150px] md:h-[160px] xl:h-[120px]' : 'h-[150px] md:h-[130px] xl:h-[80px]'">
                               <img :src="it.src" :alt="it.label" class="h-full w-full" :class="it.fit === 'cover' ? 'object-cover' : 'object-contain'" loading="lazy" />
                             </span>
@@ -195,13 +217,13 @@
 
                     <template x-if="c.type === 'mixed'">
                       <div class="flex flex-col gap-3">
-                        <a :href="c.big.href" class="flex flex-col gap-1.5">
+                        <a :href="c.big.href" class="zoom-img flex flex-col gap-1.5">
                           <span class="block h-[180px] overflow-hidden md:h-[160px] xl:h-[96px]"><img :src="c.big.src" :alt="c.big.label" class="h-full w-full object-cover" loading="lazy" /></span>
                           <span class="text-[15px] leading-5 text-ink" x-text="c.big.label"></span>
                         </a>
                         <div class="grid grid-cols-3 gap-2.5">
                           <template x-for="(it, ii) in c.items" :key="ii">
-                            <a :href="it.href" class="flex min-w-0 flex-col gap-1.5">
+                            <a :href="it.href" class="zoom-img flex min-w-0 flex-col gap-1.5">
                               <span class="block h-[92px] overflow-hidden bg-white md:h-[84px] xl:h-[58px]"><img :src="it.src" :alt="it.label" class="h-full w-full object-contain" loading="lazy" /></span>
                               <span class="truncate text-[15px] leading-5 text-ink" x-text="it.label"></span>
                             </a>
@@ -223,15 +245,15 @@
                 <div class="relative">
                   <div x-ref="track" class="no-scrollbar flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-smooth px-5 xl:gap-3">
                     <template x-for="(it, ii) in sec.items" :key="ii">
-                      <a :href="it.href" :title="it.label + ' · ' + it.price + ' · Min. sipariş: ' + it.moq" class="flex h-[150px] w-[150px] shrink-0 snap-start items-center justify-center bg-white xl:h-[146px] xl:w-[146px]">
+                      <a :href="it.href" :title="it.label + ' · ' + it.price + ' · Min. sipariş: ' + it.moq" class="zoom-img press flex h-[150px] w-[150px] shrink-0 snap-start items-center justify-center bg-white xl:h-[146px] xl:w-[146px]">
                         <img :src="it.src" :alt="it.label" class="max-h-full max-w-full object-contain" loading="lazy" />
                       </a>
                     </template>
                   </div>
-                  <button type="button" @click="scrollBy(-1)" class="absolute top-1/2 left-0 z-10 hidden h-[100px] w-[46px] -translate-y-1/2 items-center justify-center rounded-r-[4px] bg-white shadow-[0_2px_8px_rgba(0,0,0,.25)] hover:bg-gray-50 md:flex" aria-label="Geri kaydır">
+                  <button type="button" @click="scrollBy(-1)" class="press absolute top-1/2 left-0 z-10 hidden h-[100px] w-[46px] -translate-y-1/2 items-center justify-center rounded-r-[4px] bg-white shadow-[0_2px_8px_rgba(0,0,0,.25)] hover:bg-gray-50 md:flex" aria-label="Geri kaydır">
                     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
                   </button>
-                  <button type="button" @click="scrollBy(1)" class="absolute top-1/2 right-0 z-10 hidden h-[100px] w-[46px] -translate-y-1/2 items-center justify-center rounded-l-[4px] bg-white shadow-[0_2px_8px_rgba(0,0,0,.25)] hover:bg-gray-50 md:flex" aria-label="İleri kaydır">
+                  <button type="button" @click="scrollBy(1)" class="press absolute top-1/2 right-0 z-10 hidden h-[100px] w-[46px] -translate-y-1/2 items-center justify-center rounded-l-[4px] bg-white shadow-[0_2px_8px_rgba(0,0,0,.25)] hover:bg-gray-50 md:flex" aria-label="İleri kaydır">
                     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
                   </button>
                 </div>
@@ -242,8 +264,29 @@
       </div>
     </main>
 
+    <!-- ===================== ALT GEZİNME (mobil/tablet, mevcut site ile aynı) ===================== -->
+    <nav x-data class="chrome chrome-material fixed inset-x-0 bottom-0 z-30 border-t border-black/5 xl:hidden" style="padding-bottom:env(safe-area-inset-bottom,0px)" aria-label="Alt gezinme" :class="{ 'translate-y-full is-hidden': $store.chrome.hidden }">
+      <div class="grid h-14 grid-cols-5">
+        <a href="#" class="press flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-brand-btn" aria-current="page">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-9Z"></path></svg>Ana Sayfa
+        </a>
+        <a href="#" class="press flex flex-col items-center justify-center gap-1 text-[11px] text-text-secondary">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Kategoriler
+        </a>
+        <a href="#" class="press flex flex-col items-center justify-center gap-1 text-[11px] text-text-secondary">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"></path></svg>Mesaj
+        </a>
+        <a href="#" class="press flex flex-col items-center justify-center gap-1 text-[11px] text-text-secondary">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle><path d="M2 3h3l2.7 11.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.5L22 7H6"></path></svg>Sepet
+        </a>
+        <a href="#" class="press flex flex-col items-center justify-center gap-1 text-[11px] text-text-secondary">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>Menü
+        </a>
+      </div>
+    </nav>
+
     <!-- ===================== FOOTER (mevcut site ile aynı) ===================== -->
-    <footer class="mt-2 bg-[#f5f5f5]" x-data="{ cols: [
+    <footer class="mt-2 bg-[#f5f5f5] pb-14 xl:pb-0" x-data="{ cols: [
         { h: 'DESTEK ALIN', l: ['Yardım Merkezi','Canlı Destek','Sipariş durumunu kontrol edin','Kargo ve Teslimat','İadeler','Kötüye kullanım bildirin'] },
         { h: 'ÖDEMELER VE KORUMALAR', l: ['Güvenli ve kolay ödemeler','Ödeme Seçenekleri','Para iade politikası','Satış sonrası korumalar','Alıcı Koruma Programı'] },
         { h: 'İSTOC’TA TEDARİK', l: ['Fiyat Teklifi Talebi','Doğrulanmış Tedarikçiler','Tüm Kategoriler','Haftanın Fırsatları','Yeni Ürünler'] },
@@ -294,6 +337,27 @@
 
     <script>
       document.addEventListener('alpine:init', () => {
+        // Kaydırma yönüne duyarlı üst/alt çubuk: aşağı inerken saklan, yukarı çıkarken görün.
+        // 8 px histerezis titremeyi önler; en üstte ve sayfa sonunda çubuk her zaman görünür.
+        Alpine.store('chrome', { hidden: false, scrolled: false });
+        (() => {
+          const st = Alpine.store('chrome');
+          let last = window.scrollY, acc = 0, ticking = false;
+          const THRESH = 8, TOP = 24;
+          const onScroll = () => {
+            const y = Math.max(0, window.scrollY);
+            const dy = y - last; last = y;
+            st.scrolled = y > 4;
+            if (y <= TOP) { st.hidden = false; acc = 0; ticking = false; return; }
+            const atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 8;
+            if (atEnd) { st.hidden = false; acc = 0; ticking = false; return; }
+            acc = Math.sign(dy) === Math.sign(acc) ? acc + dy : dy;
+            if (acc > THRESH) st.hidden = true;
+            else if (acc < -THRESH) st.hidden = false;
+            ticking = false;
+          };
+          window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+        })();
         const FRAMES = [
           { r: -6, x: 30, y: 20, s: 170 },
           { r: 5, x: 220, y: 10, s: 150 },
@@ -322,6 +386,11 @@
             }));
           },
         }));
+        // Bölümler ilk kez görünür alana girerken tek seferlik yumuşak açılış
+        const io = ('IntersectionObserver' in window) ? new IntersectionObserver((entries) => {
+          entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 }) : null;
+        Alpine.directive('reveal', (el) => { if (io) io.observe(el); else el.classList.add('is-in'); });
         Alpine.data('carousel', () => ({
           scrollBy(dir) {
             const el = this.$refs.track;
